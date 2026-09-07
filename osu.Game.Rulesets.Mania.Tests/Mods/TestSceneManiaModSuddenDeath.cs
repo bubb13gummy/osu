@@ -68,5 +68,47 @@ namespace osu.Game.Rulesets.Mania.Tests.Mods
                 new ManiaReplayFrame(2000)
             }
         });
+
+        [TestCase(1)]
+        [TestCase(3)]
+        [TestCase(5)]
+        public void TestFailsExactlyAtMissCount(int missCount) => CreateModTest(new ModTestData
+        {
+            Mod = new ManiaModSuddenDeath { MissCount = { Value = missCount } },
+            PassCondition = () => ((ModFailConditionTestPlayer)Player).CheckFailed(true),
+            Autoplay = false,
+            CreateBeatmap = () => new Beatmap
+            {
+                HitObjects = createNotes(missCount)
+            }
+        });
+
+        [TestCase(5)]
+        public void TestDoesNotFailBeforeMissCountReached(int missCount) => CreateModTest(new ModTestData
+        {
+            Mod = new ManiaModSuddenDeath { MissCount = { Value = missCount } },
+            PassCondition = () => ((ModFailConditionTestPlayer)Player).CheckFailed(false),
+            Autoplay = false,
+            CreateBeatmap = () => new Beatmap
+            {
+                BeatmapInfo = { Difficulty = new BeatmapDifficulty { DrainRate = 0 } },
+                HitObjects = createNotes(missCount - 1)
+            }
+        });
+
+        private List<HitObject> createNotes(int count)
+        {
+            var objects = new List<HitObject>();
+
+            for (int i = 0; i < count; i++)
+            {
+                objects.Add(new Note
+                {
+                    StartTime = 1000 + i * 1000
+                });
+            }
+
+            return objects;
+        }
     }
 }

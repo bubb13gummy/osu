@@ -77,5 +77,48 @@ namespace osu.Game.Rulesets.Osu.Tests.Mods
                 new OsuReplayFrame(1001, new Vector2(256, 192)),
             }
         });
+
+        [TestCase(1)]
+        [TestCase(3)]
+        [TestCase(5)]
+        public void TestFailsExactlyAtMissCount(int missCount) => CreateModTest(new ModTestData
+        {
+            Mod = new OsuModSuddenDeath { MissCount = { Value = missCount } },
+            PassCondition = () => ((ModFailConditionTestPlayer)Player).CheckFailed(true),
+            Autoplay = false,
+            CreateBeatmap = () => new Beatmap
+            {
+                HitObjects = createHitCircles(missCount)
+            }
+        });
+
+        [TestCase(5)]
+        public void TestDoesNotFailBeforeMissCountReached(int missCount) => CreateModTest(new ModTestData
+        {
+            Mod = new OsuModSuddenDeath { MissCount = { Value = missCount } },
+            PassCondition = () => ((ModFailConditionTestPlayer)Player).CheckFailed(false),
+            Autoplay = false,
+            CreateBeatmap = () => new Beatmap
+            {
+                BeatmapInfo = { Difficulty = new BeatmapDifficulty { DrainRate = 0 } },
+                HitObjects = createHitCircles(missCount - 1)
+            }
+        });
+
+        private List<HitObject> createHitCircles(int count)
+        {
+            var objects = new List<HitObject>();
+
+            for (int i = 0; i < count; i++)
+            {
+                objects.Add(new HitCircle
+                {
+                    StartTime = 1000 + i * 1000,
+                    Position = new Vector2(256, 192)
+                });
+            }
+
+            return objects;
+        }
     }
 }
